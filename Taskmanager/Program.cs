@@ -1,15 +1,16 @@
 ﻿using System;
-using System.Xml.Linq;
+using System.IO;
+using System.Text.Json;
 class TaskItem
 {
-    public int number;
+    public int number { get; set; }
     private string _priority;
     public string Priority
     {
         get => _priority;
         set
         {
-            if (!(value=="высокий"|| value == "средний"|| value == "низкий"))
+            if (!(value=="высокий"|| value == "средний"|| value == "низкий")|| string.IsNullOrWhiteSpace(value))
             {
                 throw new FormatException("неверный формат ввода");
             }
@@ -32,9 +33,25 @@ class TaskItem
 
 class Program
 {
+    static List<TaskItem> LoadTasks()
+    {
+        try
+        {
+            if (File.Exists("tasks.json"))
+            {
+                string json = File.ReadAllText("tasks.json");
+                return JsonSerializer.Deserialize<List<TaskItem>>(json) ?? new List<TaskItem>();
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine("Ошибка при загрузке задач");
+        }
+        return new List<TaskItem>();
+    }
     static void Main()
     {
-        List <TaskItem> Biglist = new List <TaskItem> ();
+        List<TaskItem> Biglist = LoadTasks();
         while (true)
         {
             Console.WriteLine("Введите задачу");
@@ -68,6 +85,8 @@ class Program
                 }
             }
             Biglist.Add(item);
+            string json = JsonSerializer.Serialize(Biglist);
+            File.WriteAllText("tasks.json", json);
             foreach (TaskItem i in Biglist)
             {
                 Console.WriteLine(i.zadacha);
