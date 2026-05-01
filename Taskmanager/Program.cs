@@ -1,65 +1,79 @@
 ﻿using System;
-
-class Task
+using System.Xml.Linq;
+class TaskItem
 {
-    public string Description;
-    public string Priority;
-    public int Number;
-
-
-    public Task(string description, string priority,int number)
+    public int number;
+    private string _priority;
+    public string Priority
     {
-        Description = description;
-        Priority = priority;
-        Number = number;
+        get => _priority;
+        set
+        {
+            if (!(value=="высокий"|| value == "средний"|| value == "низкий"))
+            {
+                throw new FormatException("неверный формат ввода");
+            }
+            _priority = value;
+        }
     }
-
-    public void Writedown()
+    private string _name;
+    public string Name
     {
-        Console.WriteLine($"задача номер {Number}, {Description}, с приоритетом:{Priority}.");
+        get => _name;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value)) { throw new ArgumentException( "имя не может быть пустым"); }
+            _name = value;
+        }
     }
-
+    public string zadacha => $"{number}) {_name}, {_priority} приоритет";
 }
+
 
 class Program
 {
     static void Main()
     {
-        int n = 1;
-        List<Task> Tasklist = new List<Task>();
+        List <TaskItem> Biglist = new List <TaskItem> ();
         while (true)
         {
-            Console.WriteLine("Введите описание задачи:");
-            string description = Console.ReadLine();
-            if (description == "")
+            Console.WriteLine("Введите задачу");
+            TaskItem item = new TaskItem();
+            item.number = Biglist.Count + 1;
+            bool work = false;
+            while (!work)
             {
-                Console.WriteLine("если хотите выйти - нажмите Enter еще раз");
-                description = Console.ReadLine();
-                if (description == "")
+                try 
                 {
-                    break;
+                    item.Name = Console.ReadLine();
+                    work = true;
                 }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            Console.WriteLine("введите приоритет");
+            work = false;
+            while (!work)
+            {
+                try
+                {
+                    item.Priority = Console.ReadLine();
+                    work = true;
+                }
+                catch ( FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            Biglist.Add(item);
+            foreach (TaskItem i in Biglist)
+            {
+                Console.WriteLine(i.zadacha);
             }
 
-            Console.WriteLine("Введите приоритет задачи (средний/низкий/высокий):");
-            string priority = Console.ReadLine();
-            if (priority == "")
-            {
-                Console.WriteLine("если хотите выйти - нажмите Enter еще раз");
-                priority = Console.ReadLine();
-                if (priority == "")
-                {
-                    break;
-                }
-            }
-            if ((priority=="высокий" || priority=="средний" || priority== "низкий")==false)
-            {
-                Console.WriteLine("Неправильный формат ввода, попробуйте еще раз");
-                priority = Console.ReadLine();
-            }
-            Task Task1=new Task(description,priority,n++);
-            Tasklist.Add(Task1);            
-            foreach (Task Task in Tasklist) Task.Writedown();
         }
+        
     }
 }
