@@ -42,7 +42,6 @@ class TaskManager
         }
         return new List<TaskItem>();
     }
-
     static public void ShowAll(List<TaskItem> tasks)
     {
         if (tasks.Count == 0)
@@ -58,7 +57,6 @@ class TaskManager
         }
 
     }
-
     static public void ItemAdd(TaskItem item1, List<TaskItem> Biglist)
     {
         bool work = false;
@@ -103,7 +101,6 @@ class TaskManager
         item1.done = " [-]";
         SaveAll(Biglist);
     }
-
     static public void DeleteTask(List<TaskItem> tasks)
     {
         ShowAll(tasks);
@@ -112,7 +109,7 @@ class TaskManager
         while (work)
         {
             int input = Convert.ToInt32(Console.ReadLine());
-            if (input <= tasks.Count)
+            if (input >= 1 && input <= tasks.Count)
             {
                 tasks.RemoveAt(input - 1);
                 for (int i = 0; i < tasks.Count; i++)
@@ -133,7 +130,7 @@ class TaskManager
         while (!work)
         {
             int input = Convert.ToInt32(Console.ReadLine());
-            if (input < tasks.Count)
+            if (input >= 1 && input <= tasks.Count)
             {
                 Console.WriteLine("введите задачу\n");
                 tasks[input - 1].number = input;
@@ -154,7 +151,7 @@ class TaskManager
         while (!work)
         {
             int input = Convert.ToInt32(Console.ReadLine());
-            if (input < tasks.Count)
+            if (input >= 1 && input <= tasks.Count)
             {
                 tasks[input - 1].done = "[++выполнена++]";
                 work = true;
@@ -166,7 +163,6 @@ class TaskManager
 
         }
     }
-
     static public void DeleteAll(List<TaskItem> tasks)
     {
         Console.Write("вы уверены, что хотите удалить все задачи?\n для подтверждения напишите да на клавиатуре\n");
@@ -223,6 +219,7 @@ class Program
                     break;
                 case "7":
                     TaskManager.itdone(Biglist);
+                    TaskManager.SaveAll(Biglist);
                     break;
                 default:
                     Console.WriteLine("перечитай инструкцию");
