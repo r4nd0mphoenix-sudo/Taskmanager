@@ -50,6 +50,9 @@ class TaskManager
         }
         else
         {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("Список задач:");
+            Console.ResetColor();
             foreach (TaskItem i in tasks)
             {
                 Console.WriteLine(i.zadacha);
@@ -95,13 +98,13 @@ class TaskManager
                     item.Priority = "низкий";
                     work = true;
                     break;
-                default: 
+                default:
                     Console.WriteLine("неправильный формат ввода, попробуйте еще раз");
                     input = Console.ReadLine();
                     break;
             }
         }
-        item.done = " [-]";
+        item.done = "[ -]";
         Biglist.Add(item);
         SaveAll(Biglist);
         Console.WriteLine(item.zadacha);
@@ -109,7 +112,6 @@ class TaskManager
     }
     static public void DeleteTask(List<TaskItem> tasks)
     {
-        ShowAll(tasks);
         Console.WriteLine("введите номер задачи, которую нужно удалить");
         bool work = true;
         while (work)
@@ -129,7 +131,7 @@ class TaskManager
             else Console.WriteLine("введенный номер задачи не существует, попробуйте еще раз");
         }
     }
-    static public void redact (List<TaskItem> tasks)
+    static public void redact(List<TaskItem> tasks)
     {
         Console.WriteLine("введите номер задачи, которую нужно отредактировать \n");
         bool work1 = false;
@@ -223,59 +225,149 @@ class TaskManager
         else { Console.WriteLine("операция отменена\n"); }
 
     }
-}
-
-class Program
-{
-  
-    static void Main()
+    static public void Menu()
     {
-        List<TaskItem> Biglist = TaskManager.LoadTasks();
-        bool process = true;
-        while (process)
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("======МЕНЮ======\n");
+        Console.ResetColor();
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Работа с задачами");
+        Console.ResetColor();
+        Console.WriteLine("\n 1 - создать задачу \n 2 - отметить выполненой \n 3 - удалить \n 4 - редактировать \n");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Система");
+        Console.ResetColor();
+        Console.WriteLine("\n 5 - удалить все задачи\n 6 - выход\n 7 - сортировка \n");
+    }
+    static public void Sort(List<TaskItem> tasks)
+    {
+        Console.WriteLine("какие задачи вас интересуют?");
+        Console.WriteLine(" 1 - высокий приоритет \n 2 - средний \n 3 - низкий \n 4 - выполненые \n 5 - невыполненые ");
+        string input = Console.ReadLine();
+        bool work = false;
+        while (!work)
         {
-            Console.WriteLine("\nчто ты хочешь от меня?\n");
-            Console.WriteLine("1/2/3/4/5/6/7");
-            Console.WriteLine("\n 1 - добавление новой задачи \n 2 - вывести все задачи \n 3 - выйти \n 4 - удалить задачу \n 5 - удалить все задачи\n 6 - редактировать задачу\n 7 - отметить как выполненную\n");
-            string input = Console.ReadLine();
             switch (input)
             {
                 case "1":
-                    Console.Clear();
-                    TaskManager.ItemAdd(Biglist);
+                    foreach (TaskItem i in tasks)
+                    {
+                        if (i.Priority == "высокий")
+                        {
+                            Console.WriteLine(i.zadacha);
+                        }
+                    }
+                    work = true;
                     break;
                 case "2":
-                    Console.Clear();
-                    TaskManager.ShowAll(Biglist);
+                    foreach (TaskItem i in tasks)
+                    {
+                        if (i.Priority == "средний")
+                        {
+                            Console.WriteLine(i.zadacha);
+                        }
+                    }
+                    work = true;
                     break;
                 case "3":
-                    Console.Clear();
-                    process = false;
+                    foreach (TaskItem i in tasks)
+                    {
+                        if (i.Priority == "низкий")
+                        {
+                            Console.WriteLine(i.zadacha);
+                        }
+                    }
+                    work = true;
                     break;
                 case "4":
-                    Console.Clear();
-                    TaskManager.DeleteTask(Biglist);
+                    foreach (TaskItem i in tasks)
+                    {
+                        if (i.done == "[++выполнена++]")
+                        {
+                            Console.WriteLine(i.zadacha);
+                        }
+                    }
+                    work = true;
                     break;
                 case "5":
-                    Console.Clear();
-                    TaskManager.DeleteAll(Biglist);
+                    foreach (TaskItem i in tasks)
+                    {
+                        if (i.done == " [-]")
+                        {
+                            Console.WriteLine(i.zadacha);
+                        }
+                    }
+                    work = true;
                     break;
-                case "6":
-                    Console.Clear();
-                    TaskManager.ShowAll(Biglist);
-                    TaskManager.redact(Biglist);
-                    break;
-                case "7":
-                    Console.Clear();
-                    TaskManager.itdone(Biglist);
-                    break;
-                default:
-                    Console.WriteLine("перечитай инструкцию");
-                    break;
+                default: Console.WriteLine("неправильный формат ввода, попробуйте еще раз"); break;
 
-            }           
+            }
 
         }
-        
     }
 }
+    class Program
+    {
+
+        static void Main()
+        {
+            List<TaskItem> Biglist = TaskManager.LoadTasks();
+            bool process = true;
+            while (process)
+            {
+                if (Biglist.Count > 0)
+                {
+                    Console.WriteLine("\n");
+                    TaskManager.ShowAll(Biglist);
+                }
+                else
+                {
+                    Console.WriteLine("          активных задач нет");
+                }
+                TaskManager.Menu();
+                string input = Console.ReadLine();
+                switch (input)
+                {
+                    case "1":
+                        Console.Clear();
+                        TaskManager.ShowAll(Biglist);
+                        TaskManager.ItemAdd(Biglist);
+                        break;
+                    case "2":
+                        Console.Clear();
+                        TaskManager.ShowAll(Biglist);
+                        TaskManager.itdone(Biglist);
+                        break;
+                    case "3":
+                        Console.Clear();
+                        TaskManager.ShowAll(Biglist);
+                        TaskManager.DeleteTask(Biglist);
+                        break;
+                    case "4":
+                        Console.Clear();
+                        TaskManager.ShowAll(Biglist);
+                        TaskManager.redact(Biglist);
+                        break;
+                    case "5":
+                        Console.Clear();
+                        TaskManager.ShowAll(Biglist);
+                        TaskManager.DeleteAll(Biglist);
+                        break;
+                    case "6":
+                        Console.Clear();
+                        process = false;
+                        break;
+                    case "7":
+                        Console.Clear();
+                        TaskManager.Sort(Biglist);
+                        break;
+                    default:
+                        Console.WriteLine("перечитай инструкцию");
+                        break;
+
+                }
+
+            }
+
+        }
+    }
