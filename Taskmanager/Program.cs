@@ -57,14 +57,17 @@ class TaskManager
         }
 
     }
-    static public void ItemAdd(TaskItem item1, List<TaskItem> Biglist)
+    static public void ItemAdd(List<TaskItem> Biglist)
     {
+        Console.WriteLine("Введите задачу");
+        TaskItem item = new TaskItem();
+        item.number = Biglist.Count + 1;
         bool work = false;
         while (!work)
         {
             try
             {
-                item1.Name = Console.ReadLine();
+                item.Name = Console.ReadLine();
                 work = true;
             }
             catch (ArgumentException ex)
@@ -81,15 +84,15 @@ class TaskManager
             switch (input)
             {
                 case "1":
-                    item1.Priority = "высокий";
+                    item.Priority = "высокий";
                     work = true;
                     break;
                 case "2":
-                    item1.Priority = "средний";
+                    item.Priority = "средний";
                     work = true;
                     break;
                 case "3":
-                    item1.Priority = "низкий";
+                    item.Priority = "низкий";
                     work = true;
                     break;
                 default: 
@@ -98,8 +101,11 @@ class TaskManager
                     break;
             }
         }
-        item1.done = " [-]";
+        item.done = " [-]";
+        Biglist.Add(item);
         SaveAll(Biglist);
+        Console.WriteLine(item.zadacha);
+        Console.WriteLine("задача успешно сохранена\n");
     }
     static public void DeleteTask(List<TaskItem> tasks)
     {
@@ -126,16 +132,55 @@ class TaskManager
     static public void redact (List<TaskItem> tasks)
     {
         Console.WriteLine("введите номер задачи, которую нужно отредактировать \n");
-        bool work = false;
-        while (!work)
+        bool work1 = false;
+        while (!work1)
         {
             int input = Convert.ToInt32(Console.ReadLine());
             if (input >= 1 && input <= tasks.Count)
             {
                 Console.WriteLine("введите задачу\n");
                 tasks[input - 1].number = input;
-                TaskManager.ItemAdd(tasks[input-1], tasks);
-                work = true;
+                bool work = false;
+                while (!work)
+                {
+                    try
+                    {
+                        tasks[input - 1].Name = Console.ReadLine();
+                        work = true;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+                Console.WriteLine("введите приоритет\n");
+                Console.WriteLine(" 1 - высокий \n 2 - средний \n 3 - низкий \n");
+                string inputp = Console.ReadLine();
+                work = false;
+                while (!work)
+                {
+                    switch (inputp)
+                    {
+                        case "1":
+                            tasks[input - 1].Priority = "высокий";
+                            work = true;
+                            break;
+                        case "2":
+                            tasks[input - 1].Priority = "средний";
+                            work = true;
+                            break;
+                        case "3":
+                            tasks[input - 1].Priority = "низкий";
+                            work = true;
+                            break;
+                        default:
+                            Console.WriteLine("неправильный формат ввода, попробуйте еще раз");
+                            inputp = Console.ReadLine();
+                            break;
+                    }
+                }
+                work1 = true;
+                SaveAll(tasks);
             }
             else
             {
@@ -155,6 +200,8 @@ class TaskManager
             {
                 tasks[input - 1].done = "[++выполнена++]";
                 work = true;
+                Console.WriteLine($"задача {input} выполнена!");
+                TaskManager.SaveAll(tasks);
             }
             else
             {
@@ -194,32 +241,33 @@ class Program
             switch (input)
             {
                 case "1":
-                    Console.WriteLine("Введите задачу");
-                    TaskItem item = new TaskItem();
-                    item.number = Biglist.Count + 1;
-                    TaskManager.ItemAdd(item, Biglist);
-                    Console.WriteLine(item.zadacha);
-                    Biglist.Add(item);
-                    Console.WriteLine("задача успешно сохранена\n");
+                    Console.Clear();
+                    TaskManager.ItemAdd(Biglist);
                     break;
                 case "2":
+                    Console.Clear();
                     TaskManager.ShowAll(Biglist);
                     break;
                 case "3":
+                    Console.Clear();
                     process = false;
                     break;
                 case "4":
+                    Console.Clear();
                     TaskManager.DeleteTask(Biglist);
                     break;
                 case "5":
+                    Console.Clear();
                     TaskManager.DeleteAll(Biglist);
                     break;
                 case "6":
+                    Console.Clear();
+                    TaskManager.ShowAll(Biglist);
                     TaskManager.redact(Biglist);
                     break;
                 case "7":
+                    Console.Clear();
                     TaskManager.itdone(Biglist);
-                    TaskManager.SaveAll(Biglist);
                     break;
                 default:
                     Console.WriteLine("перечитай инструкцию");
