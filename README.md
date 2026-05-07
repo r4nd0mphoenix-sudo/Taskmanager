@@ -1,3 +1,4 @@
+<img width="1346" height="761" alt="2026-05-07_13-56-14" src="https://github.com/user-attachments/assets/d14579d9-1c52-45e5-8e62-54cbd215fcc8" />
 # Task Manager (C# Console App)
 
 A simple console-based task manager written in C# with JSON file persistence.
