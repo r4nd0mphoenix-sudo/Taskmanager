@@ -1,10 +1,14 @@
-﻿using System;
-using System.IO;
-using System.Text.Json;
+﻿using System.Text.Json;
 class TaskItem
 {
     public int number { get; set; }
-    public string Priority { get; set; }
+    public enum PriorityLevel
+    {
+        High, 
+        Medium, 
+        Low
+    }
+    public PriorityLevel Priority { get; set; }
     private string _name;
     public string Name
     {
@@ -15,10 +19,59 @@ class TaskItem
             _name = value;
         }
     }
-    public string done { get; set; }
-    public string zadacha => $"{number}) {_name}, {Priority} приоритет, {done}";
+    public bool IsDone { get; set; }
+    public string PriorityText => Priority switch
+    {
+        PriorityLevel.High => "высокий",
+        PriorityLevel.Medium => "средний",
+        PriorityLevel.Low => "низкий",
+    };
+    public string Writedown => $"{number}) {_name}, {PriorityText} приоритет, {(IsDone ? "[++выполнена++]":"[]")}";
 }
 
+class Logic 
+{ 
+    static public void NameRead(TaskItem item)
+    {
+        Console.WriteLine("Введите задачу");
+        bool work = false;
+        while (!work)
+        {
+            try
+            {
+                item.Name = Console.ReadLine();
+                work = true;
+            }
+            catch (ArgumentException ex)
+            {
+    Console.WriteLine(ex.Message);
+}
+        }
+    }
+    static public void PriorityRead(TaskItem item)
+    {
+        bool work = false;
+        while (!work)
+        {
+            Console.WriteLine("введите приоритет\n");
+            Console.WriteLine(" 1 - высокий \n 2 - средний \n 3 - низкий \n");
+            string input = Console.ReadLine();
+            int num;
+            if (int.TryParse(input, out num) && 0 < num && num <= 3)
+            {
+                item.Priority = (TaskItem.PriorityLevel)num - 1;
+                work = true;
+            }
+            else
+            {
+                Console.WriteLine("ввод некорректен, попробуйте еще раз");
+            }
+
+
+        }
+    }
+
+}
 class TaskManager
 {
     static public void SaveAll(List<TaskItem> tasks)
@@ -55,59 +108,25 @@ class TaskManager
             Console.ResetColor();
             foreach (TaskItem i in tasks)
             {
-                Console.WriteLine(i.zadacha);
+                Console.WriteLine(i.Writedown);
             }
         }
 
     }
-    static public void ItemAdd(List<TaskItem> Biglist)
+    static public TaskItem CreateTask(List<TaskItem> Biglist)
     {
-        Console.WriteLine("Введите задачу");
         TaskItem item = new TaskItem();
         item.number = Biglist.Count + 1;
-        bool work = false;
-        while (!work)
-        {
-            try
-            {
-                item.Name = Console.ReadLine();
-                work = true;
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-        Console.WriteLine("введите приоритет\n");
-        Console.WriteLine(" 1 - высокий \n 2 - средний \n 3 - низкий \n");
-        string input = Console.ReadLine();
-        work = false;
-        while (!work)
-        {
-            switch (input)
-            {
-                case "1":
-                    item.Priority = "высокий";
-                    work = true;
-                    break;
-                case "2":
-                    item.Priority = "средний";
-                    work = true;
-                    break;
-                case "3":
-                    item.Priority = "низкий";
-                    work = true;
-                    break;
-                default:
-                    Console.WriteLine("неправильный формат ввода, попробуйте еще раз");
-                    input = Console.ReadLine();
-                    break;
-            }
-        }
-        item.done = "[ -]";
+        return item;
+    }
+    static public void ItemAdd(List<TaskItem> Biglist, TaskItem item)
+    {
+        Logic.NameRead(item);
+        Logic.PriorityRead(item);        
+        item.IsDone = false;
         Biglist.Add(item);
         SaveAll(Biglist);
-        Console.WriteLine(item.zadacha);
+        Console.WriteLine(item.Writedown);
         Console.WriteLine("задача успешно сохранена\n");
     }
     static public void DeleteTask(List<TaskItem> tasks)
@@ -116,10 +135,11 @@ class TaskManager
         bool work = true;
         while (work)
         {
-            int input = Convert.ToInt32(Console.ReadLine());
-            if (input >= 1 && input <= tasks.Count)
+            string input = Console.ReadLine();
+            int num;
+            if ((int.TryParse(input, out num) && num >= 1 && num <= tasks.Count))
             {
-                tasks.RemoveAt(input - 1);
+                tasks.RemoveAt(num - 1);
                 for (int i = 0; i < tasks.Count; i++)
                 {
                     tasks[i].number = i + 1;
@@ -128,86 +148,55 @@ class TaskManager
                 work = false;
                 Console.WriteLine("Задача удалена\n");
             }
-            else Console.WriteLine("введенный номер задачи не существует, попробуйте еще раз");
+            else Console.WriteLine("ввод некорректен, попробуйте еще раз");
         }
     }
-    static public void redact(List<TaskItem> tasks)
+    static public void EditTusk(List<TaskItem> tasks)
     {
         Console.WriteLine("введите номер задачи, которую нужно отредактировать \n");
         bool work1 = false;
         while (!work1)
         {
-            int input = Convert.ToInt32(Console.ReadLine());
-            if (input >= 1 && input <= tasks.Count)
+            int num;
+            string input = Console.ReadLine();
+            if (int.TryParse(input, out num))
             {
-                Console.WriteLine("введите задачу\n");
-                tasks[input - 1].number = input;
-                bool work = false;
-                while (!work)
+                if (num >= 1 && num <= tasks.Count)
                 {
-                    try
-                    {
-                        tasks[input - 1].Name = Console.ReadLine();
-                        work = true;
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
+                    Logic.NameRead(tasks[num-1]);
+                    Logic.PriorityRead(tasks[num-1]);
+                    SaveAll(tasks);
+                    Console.WriteLine("изменения успешно сохранены\n");
+                    Console.WriteLine(tasks[num-1].Writedown);
+                    work1 = true;
                 }
-                Console.WriteLine("введите приоритет\n");
-                Console.WriteLine(" 1 - высокий \n 2 - средний \n 3 - низкий \n");
-                string inputp = Console.ReadLine();
-                work = false;
-                while (!work)
-                {
-                    switch (inputp)
-                    {
-                        case "1":
-                            tasks[input - 1].Priority = "высокий";
-                            work = true;
-                            break;
-                        case "2":
-                            tasks[input - 1].Priority = "средний";
-                            work = true;
-                            break;
-                        case "3":
-                            tasks[input - 1].Priority = "низкий";
-                            work = true;
-                            break;
-                        default:
-                            Console.WriteLine("неправильный формат ввода, попробуйте еще раз");
-                            inputp = Console.ReadLine();
-                            break;
-                    }
-                }
-                work1 = true;
-                SaveAll(tasks);
             }
             else
             {
-                Console.WriteLine("введенный номер не существует, попробуйте еще раз \n");
+                Console.WriteLine("ввод некорректен, попробуйте еще раз \n");
+                continue;
             }
 
         }
     }
-    static public void itdone(List<TaskItem> tasks)
+    static public void itIsDone(List<TaskItem> tasks)
     {
         Console.WriteLine("введите номер выполненной задачи\n");
         bool work = false;
         while (!work)
         {
-            int input = Convert.ToInt32(Console.ReadLine());
-            if (input >= 1 && input <= tasks.Count)
+            string input = Console.ReadLine();
+            int num;
+            if ((int.TryParse(input, out num) && num >= 1 && num <= tasks.Count))
             {
-                tasks[input - 1].done = "[++выполнена++]";
+                tasks[num - 1].IsDone = true;
                 work = true;
                 Console.WriteLine($"задача {input} выполнена!");
                 TaskManager.SaveAll(tasks);
             }
             else
             {
-                Console.WriteLine("введенный номер не существует, попробуйте еще раз \n");
+                Console.WriteLine("ввод некорректен, попробуйте еще раз\n");
             }
 
         }
@@ -239,7 +228,7 @@ class TaskManager
         Console.ResetColor();
         Console.WriteLine("\n 5 - удалить все задачи\n 6 - выход\n 7 - сортировка \n");
     }
-    static public void Sort(List<TaskItem> tasks)
+    static public void FilterTask(List<TaskItem> tasks)
     {
         Console.WriteLine("какие задачи вас интересуют?");
         Console.WriteLine(" 1 - высокий приоритет \n 2 - средний \n 3 - низкий \n 4 - выполненые \n 5 - невыполненые ");
@@ -252,54 +241,59 @@ class TaskManager
                 case "1":
                     foreach (TaskItem i in tasks)
                     {
-                        if (i.Priority == "высокий")
+                        if (i.Priority == TaskItem.PriorityLevel.High)
                         {
-                            Console.WriteLine(i.zadacha);
+                            Console.WriteLine(i.Writedown);
                         }
                     }
                     work = true;
+                    Console.ReadLine();
                     break;
                 case "2":
                     foreach (TaskItem i in tasks)
                     {
-                        if (i.Priority == "средний")
+                        if (i.Priority == TaskItem.PriorityLevel.Medium)
                         {
-                            Console.WriteLine(i.zadacha);
+                            Console.WriteLine(i.Writedown);
                         }
                     }
                     work = true;
+                    Console.ReadLine();
                     break;
                 case "3":
                     foreach (TaskItem i in tasks)
                     {
-                        if (i.Priority == "низкий")
+                        if (i.Priority == TaskItem.PriorityLevel.Low)
                         {
-                            Console.WriteLine(i.zadacha);
+                            Console.WriteLine(i.Writedown);
                         }
                     }
                     work = true;
+                    Console.ReadLine();
                     break;
                 case "4":
                     foreach (TaskItem i in tasks)
                     {
-                        if (i.done == "[++выполнена++]")
+                        if (i.IsDone == true)
                         {
-                            Console.WriteLine(i.zadacha);
+                            Console.WriteLine(i.Writedown);
                         }
                     }
                     work = true;
+                    Console.ReadLine();
                     break;
                 case "5":
                     foreach (TaskItem i in tasks)
                     {
-                        if (i.done == " [-]")
+                        if (i.IsDone == false)
                         {
-                            Console.WriteLine(i.zadacha);
+                            Console.WriteLine(i.Writedown);
                         }
                     }
                     work = true;
+                    Console.ReadLine();
                     break;
-                default: Console.WriteLine("неправильный формат ввода, попробуйте еще раз"); break;
+                default: Console.WriteLine("неправильный формат ввода, попробуйте еще раз"); input = Console.ReadLine(); break;
 
             }
 
@@ -331,12 +325,13 @@ class TaskManager
                     case "1":
                         Console.Clear();
                         TaskManager.ShowAll(Biglist);
-                        TaskManager.ItemAdd(Biglist);
+                        TaskItem item = TaskManager.CreateTask(Biglist);
+                        TaskManager.ItemAdd(Biglist,item);
                         break;
                     case "2":
                         Console.Clear();
                         TaskManager.ShowAll(Biglist);
-                        TaskManager.itdone(Biglist);
+                        TaskManager.itIsDone(Biglist);
                         break;
                     case "3":
                         Console.Clear();
@@ -346,7 +341,7 @@ class TaskManager
                     case "4":
                         Console.Clear();
                         TaskManager.ShowAll(Biglist);
-                        TaskManager.redact(Biglist);
+                        TaskManager.EditTusk(Biglist);
                         break;
                     case "5":
                         Console.Clear();
@@ -357,11 +352,11 @@ class TaskManager
                         Console.Clear();
                         process = false;
                         break;
-                    case "7":
-                        Console.Clear();
-                        TaskManager.Sort(Biglist);
-                        break;
-                    default:
+                case "7":
+                    Console.Clear();
+                    TaskManager.FilterTask(Biglist);
+                    break;
+                default:
                         Console.WriteLine("перечитай инструкцию");
                         break;
 
